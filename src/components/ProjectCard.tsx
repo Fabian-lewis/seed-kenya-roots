@@ -10,8 +10,13 @@ interface ProjectCardProps {
   project: Project;
 }
 
+  
 const ProjectCard = ({ project }: ProjectCardProps) => {
-  const progress = (project.treesPlanted / project.treesTarget) * 100;
+  const treesPlanted = project.trees_planted ?? project.trees_planted ?? 0;
+  const treesTarget = project.trees_target ?? project.trees_target ?? 1; // avoid divide by zero
+  //const progress = Math.min((treesPlanted / treesTarget) * 100, 100);
+  const co2Offset = project.co2_offset ?? project.co2_offset ?? 0;
+  const progress = (project.trees_planted / project.trees_target) * 100;
 
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -54,7 +59,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Progress</span>
             <span className="font-medium text-foreground">
-              {project.treesPlanted.toLocaleString()} / {project.treesTarget.toLocaleString()} trees
+              {project.trees_planted} / {project.trees_target} trees
             </span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -66,7 +71,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
             <div>
               <p className="text-xs text-muted-foreground">Target</p>
               <p className="text-sm font-semibold text-foreground">
-                {project.treesTarget.toLocaleString()}
+                {project.trees_target}
               </p>
             </div>
           </div>
@@ -75,7 +80,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
             <div>
               <p className="text-xs text-muted-foreground">CO₂ Offset</p>
               <p className="text-sm font-semibold text-foreground">
-                {(project.co2Offset / 1000).toFixed(1)}t
+                {(project.co2_offset / 1000).toFixed(1)}t
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { TreePine, Users, Wind, Target, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { TreePine, Users, Wind, Target, ArrowRight, CheckCircle2, Briefcase, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,9 +7,55 @@ import ProjectCard from '@/components/ProjectCard';
 import StatsCard from '@/components/StatsCard';
 import { mockProjects, siteStats } from '@/data/mockData';
 import heroImage from '@/assets/hero-forest.jpg';
+import { useEffect, useState } from 'react';
+
+import { supabase } from '@/services/supabaseClient';
+
+
 
 const Index = () => {
   const featuredProjects = mockProjects.slice(0, 3);
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    totalEvents: 0,
+    totalTreesPlanted: 0,
+    totalTreesTarget: 0
+  });
+  
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Projects data
+        const { data: projects, error: projectsError } = await supabase
+          .from('projects')
+          .select('*');
+  
+        if (projectsError) throw projectsError;
+  
+        const totalTreesTarget = projects.reduce((acc, p) => acc + (p.trees_target || 0), 0);
+        const totalTreesPlanted = projects.reduce((acc, p) => acc + (p.trees_planted || 0), 0);
+  
+        // Events count
+        const { count: eventsCount, error: eventsError } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true });
+  
+        if (eventsError) throw eventsError;
+  
+        setStats({
+          totalProjects: projects.length,
+          totalEvents: eventsCount || 0,
+          totalTreesPlanted,
+          totalTreesTarget
+        });
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+  
+    fetchStats();
+  }, []);
+  
 
   return (
     <div className="min-h-screen">

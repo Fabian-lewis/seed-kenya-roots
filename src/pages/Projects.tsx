@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
@@ -6,17 +6,40 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockProjects } from '@/data/mockData';
 import { Search } from 'lucide-react';
+import { supabase } from '@/services/supabaseClient'
 
 const Projects = () => {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const filteredProjects = mockProjects.filter((project) => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.county.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) console.error('Error fetching projects:', error);
+      else setProjects(data || []);
+
+      setLoading(false);
+    };
+
+    fetchProjects();
+  }, []);
+
+
+  const filteredProjects = projects.filter((project) => {
+    const matchesSearch =
+      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.county.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -66,7 +89,11 @@ const Projects = () => {
         {/* Projects Grid */}
         <section className="py-12">
           <div className="container mx-auto px-4">
-            {filteredProjects.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-20">
+                <p className="text-lg text-muted-foreground">Loading projects...</p>
+              </div>
+            ) : filteredProjects.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProjects.map((project) => (
                   <ProjectCard key={project.id} project={project} />
@@ -81,6 +108,7 @@ const Projects = () => {
             )}
           </div>
         </section>
+
       </main>
 
       <Footer />

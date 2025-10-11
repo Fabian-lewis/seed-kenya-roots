@@ -3,9 +3,9 @@ export interface Project {
   name: string;
   county: string;
   description: string;
-  treesTarget: number;
-  treesPlanted: number;
-  co2Offset: number;
+  trees_target: number;
+  trees_planted: number;
+  co2_offset: number;
   status: 'Available' | 'In Progress' | 'Funded';
   imageUrl?: string;
 }
