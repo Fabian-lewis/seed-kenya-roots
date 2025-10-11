@@ -9,6 +9,7 @@ import Events from "./pages/Events";
 import Impact from "./pages/Impact";
 import Auth from "./pages/Auth";
 import Partners from "./pages/Partners";
+import CorporateDashboard from "./pages/CorporateDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/events/:id" element={<Events />} />
           <Route path="/impact" element={<Impact />} />
           <Route path="/partners" element={<Partners />} />
+          <Route path="/dashboard/corporate" element={<CorporateDashboard />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

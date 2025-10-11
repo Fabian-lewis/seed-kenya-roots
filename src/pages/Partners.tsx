@@ -1,8 +1,9 @@
-import { Check, Sprout, Target, TrendingUp, Users, Award, Shield, Globe, ArrowRight } from 'lucide-react';
+import { Check, Sprout, Target, TrendingUp, Users, Award, Shield, Globe, ArrowRight, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Link } from 'react-router-dom';
 
 const Partners = () => {
   const scrollToPlans = () => {
@@ -104,10 +105,18 @@ const Partners = () => {
             <p className="text-xl text-muted-foreground mb-8">
               Empower your organization to achieve measurable impact and sustainability goals through transparent reforestation partnerships.
             </p>
-            <Button onClick={scrollToPlans} size="lg" className="group">
-              Explore Partnership Plans
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button onClick={scrollToPlans} size="lg" className="group">
+                Explore Partnership Plans
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Link to="/dashboard/corporate">
+                <Button size="lg" variant="outline" className="group">
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  View Demo Dashboard
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
