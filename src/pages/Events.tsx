@@ -1,18 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EventCard from '@/components/EventCard';
 import { Input } from '@/components/ui/input';
 import { mockEvents } from '@/data/mockData';
 import { Search, Calendar } from 'lucide-react';
+import { supabase } from '@/services/supabaseClient';
 
 const Events = () => {
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading , setLoading] = useState(true);
 
-  const filteredEvents = mockEvents.filter((event) => {
-    return event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           event.county.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           event.projectName.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const { data, error } = await supabase.from('events').select('*').order('event_date', { ascending: true });
+      if (error) console.error('Error fetching events:', error);
+      else setEvents(data || []);
+      setLoading(false);
+    };
+    fetchEvents();
+  }, []);
+
+  const filteredEvents = events.filter((event) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      event.name.toLowerCase().includes(term) ||
+      event.county?.toLowerCase().includes(term) ||
+      event.project_name?.toLowerCase().includes(term)
+    );
   });
 
   return (

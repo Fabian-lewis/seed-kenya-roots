@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '@/services/supabaseClient';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,33 +13,68 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate authentication
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Success!",
-        description: "You have been signed in successfully.",
-      });
-    }, 1500);
-  };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate registration
-    setTimeout(() => {
-      setIsLoading(false);
+
+    const email = (document.getElementById('signup-email') as HTMLInputElement).value;
+    const password = (document.getElementById('signup-password') as HTMLInputElement).value;
+    const fullname = (document.getElementById('signup-name') as HTMLInputElement).value;
+
+    const { data, error} = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullname },
+      },
+    });
+
+    setIsLoading(false);
+
+    if (error) {
       toast({
-        title: "Welcome to Linda Dunia!",
-        description: "Your account has been created successfully.",
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
-    }, 1500);
+    } else {
+      toast({
+        title: "Check your inbox",
+        description: "We have sent a confirmation link to your email.",
+      });
+    }
   };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+  
+    const email = (document.getElementById('signin-email') as HTMLInputElement).value;
+    const password = (document.getElementById('signin-password') as HTMLInputElement).value;
+  
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  
+    setIsLoading(false);
+  
+    if (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in.",
+      });
+      // Example redirect (if you use React Router)
+      window.location.href = "/impact";
+    }
+  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-accent/20 p-4">
