@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ProjectCard from '@/components/ProjectCard';
+import EventCard from '@/components/EventCard';
 import StatsCard from '@/components/StatsCard';
-import { mockProjects, siteStats } from '@/data/mockData';
 import heroImage from '@/assets/hero-forest.jpg';
 import { useEffect, useState } from 'react';
 
@@ -14,14 +14,52 @@ import { supabase } from '@/services/supabaseClient';
 
 
 const Index = () => {
-  const featuredProjects = mockProjects.slice(0, 3);
+
+  // Fetch Featuring Projects 
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() =>{
+      const fetchEvents = async () => {
+        try{
+          setLoading(true);
+          setError(null);
+
+          // ---Fetch from supabase---
+          const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .order('created_at', {ascending: false})
+            .limit(3);
+
+          if (error) throw error;
+
+          setEvents(data);
+        } catch (err) {
+          console.error('Error fetching events:', err);
+          setError('Failed to load events.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchEvents();
+
+    }, []);
+
+
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalEvents: 0,
     totalTreesPlanted: 0,
-    totalTreesTarget: 0
+    totalTreesTarget: 0,
+    communityMembers:0,
+    co2Offset:0
   });
   
+  
+  // Runs once to fetch all rows
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -34,6 +72,7 @@ const Index = () => {
   
         const totalTreesTarget = projects.reduce((acc, p) => acc + (p.trees_target || 0), 0);
         const totalTreesPlanted = projects.reduce((acc, p) => acc + (p.trees_planted || 0), 0);
+        const co2Offset = (totalTreesPlanted * 0.01)
   
         // Events count
         const { count: eventsCount, error: eventsError } = await supabase
@@ -41,12 +80,21 @@ const Index = () => {
           .select('*', { count: 'exact', head: true });
   
         if (eventsError) throw eventsError;
+
+        // Community members count
+        const { count: usersCount, error: usersError} = await supabase
+        .from('users')
+        .select('*', {count: 'exact', head: true})
+
+        if (usersError) throw usersError;
   
         setStats({
           totalProjects: projects.length,
           totalEvents: eventsCount || 0,
-          totalTreesPlanted,
-          totalTreesTarget
+          totalTreesPlanted:totalTreesPlanted,
+          totalTreesTarget:totalTreesTarget,
+          co2Offset:co2Offset,
+          communityMembers:usersCount
         });
       } catch (err) {
         console.error('Error fetching stats:', err);
@@ -107,28 +155,28 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <StatsCard
               title="Trees Planted"
-              value={siteStats.totalTrees.toLocaleString()}
+              value={stats.totalTreesPlanted}
               icon={TreePine}
               description="And counting..."
               gradient="from-primary/20 to-primary-light/20"
             />
             <StatsCard
               title="CO₂ Offset"
-              value={`${(siteStats.totalCO2Offset / 1000).toFixed(0)}t`}
+              value={`${stats.co2Offset}t`}
               icon={Wind}
               description="Carbon removed"
               gradient="from-accent/20 to-nature-sky/20"
             />
             <StatsCard
               title="Community Members"
-              value={siteStats.totalMembers.toLocaleString()}
+              value={stats.communityMembers}
               icon={Users}
               description="Active volunteers"
               gradient="from-nature-earth/20 to-secondary/20"
             />
             <StatsCard
               title="Active Projects"
-              value={siteStats.activeProjects}
+              value={stats.totalEvents}
               icon={Target}
               description="Across Kenya"
               gradient="from-primary-light/20 to-accent/20"
@@ -192,29 +240,29 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Projects */}
+      {/* Upcoming Events */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-12">
             <div>
               <h2 className="font-heading font-bold text-4xl mb-2 text-foreground">
-                Featured Projects
+                Upcoming Events
               </h2>
               <p className="text-lg text-muted-foreground">
-                Active reforestation initiatives across Kenya
+                Upcoming community activities across Kenya
               </p>
             </div>
-            <Link to="/projects">
+            <Link to="/events">
               <Button variant="outline">
-                View All Projects
+                View All Events
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
             ))}
           </div>
         </div>
