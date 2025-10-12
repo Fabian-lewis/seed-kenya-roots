@@ -31,10 +31,11 @@ export const AuthProvider = ({ children }) => {
       email,
       password,
       options: { data: metadata },
-    })
-    if (error) throw error
-    return data
-  }
+    });
+    if (error) throw error;  
+    return data;
+  };
+  
 
   const signInWithEmail = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -42,7 +43,10 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  const signOut = () => supabase.auth.signOut()
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signUpWithEmail, signInWithEmail, signOut }}>

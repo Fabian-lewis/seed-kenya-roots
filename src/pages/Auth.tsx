@@ -67,7 +67,7 @@ const Auth = () => {
       });
     } else {
       toast({
-        title: "Welcome back!",
+        title: `Welcome back! ${data.user.user_metadata.full_name}`,
         description: "Successfully signed in.",
       });
       // Example redirect (if you use React Router)

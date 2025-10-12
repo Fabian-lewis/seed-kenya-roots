@@ -2,10 +2,17 @@ import { Link, useLocation } from 'react-router-dom';
 import { Sprout, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   const navItems = [
     { label: 'Home', path: '/' },
@@ -49,6 +56,11 @@ const Navbar = () => {
             <Link to="/auth">
               <Button variant="default" className="font-medium">
                 Sign In
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button variant="default" className="font-medium" onClick={handleSignOut}>
+                Sign Out
               </Button>
             </Link>
           </div>
