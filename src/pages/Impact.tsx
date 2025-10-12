@@ -1,13 +1,22 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StatsCard from '@/components/StatsCard';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
 import { mockUserImpact } from '@/data/mockData';
-import { TreePine, Wind, Calendar, TrendingUp } from 'lucide-react';
+import { TreePine, Wind, Calendar, TrendingUp, Award } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Impact = () => {
   const { treesPlanted, co2Offset, eventsParticipated, eventHistory } = mockUserImpact;
+  const userData = {
+    name: "User",
+    treesPlanted: 47,
+    carbonOffset: 470, // kg
+    eventsAttended: 3,
+    badges: ["Seedling Starter", "Grove Guardian"],
+    rank: 342,
+    totalUsers: 15420
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -18,7 +27,7 @@ const Impact = () => {
         <section className="bg-gradient-to-r from-nature-leaf to-primary py-16 text-white">
           <div className="container mx-auto px-4">
             <h1 className="font-heading font-bold text-5xl mb-4">
-              My Environmental Impact
+            Karibu, {userData.name} 🌱
             </h1>
             <p className="text-xl text-white/90">
               Track your contribution to Kenya's reforestation
@@ -28,7 +37,7 @@ const Impact = () => {
 
         {/* Stats Overview */}
         <section className="py-12">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               <StatsCard
                 title="Trees Planted"
@@ -51,6 +60,13 @@ const Impact = () => {
                 description="Community events joined"
                 gradient="from-nature-earth/20 to-secondary/20"
               />
+              <StatsCard
+                title="Community Rank"
+                value={userData.rank}
+                icon={TrendingUp}
+                description={`Your rank out of ${userData.rank*2}`}
+                gradient="from-nature-earth/20 to-secondary/20"
+              />
             </div>
 
             {/* Inspirational Quote */}
@@ -68,6 +84,63 @@ const Impact = () => {
                 </div>
               </div>
             </Card>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Impact Chart Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-['Lora']">Your Impact Over Time</CardTitle>
+                  <CardDescription>Trees planted per month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-end justify-around gap-2">
+                    {[12, 8, 15, 7, 5].map((value, index) => (
+                      <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                        <div 
+                          className="w-full bg-primary rounded-t-lg transition-all hover:bg-primary-dark"
+                          style={{ height: `${(value / 15) * 100}%` }}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {["Nov", "Dec", "Jan", "Feb", "Mar"][index]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Badges Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-['Lora']">Achievement Badges</CardTitle>
+                  <CardDescription>Your environmental milestones</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {userData.badges.map((badge, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Award className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground">{badge}</div>
+                          <div className="text-sm text-muted-foreground">Earned</div>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg opacity-50">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <Award className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-muted-foreground">Forest Champion</div>
+                        <div className="text-sm text-muted-foreground">Plant 100 trees to unlock</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div> 
 
             {/* Event History */}
             <div className="space-y-6">
@@ -116,6 +189,7 @@ const Impact = () => {
                 </Card>
               )}
             </div>
+
           </div>
         </section>
       </main>
