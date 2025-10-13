@@ -1,18 +1,7 @@
-# Welcome to your Lovable project
+# Welcome to SEED-KENYA-ROOTS project
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/c124a7a0-1a6b-49a4-b88a-5712f6a764c9
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/c124a7a0-1a6b-49a4-b88a-5712f6a764c9) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
