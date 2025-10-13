@@ -6,11 +6,16 @@ import StatsCard from '@/components/StatsCard';
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
 import { TreePine, Wind, Calendar, TrendingUp, Award } from 'lucide-react';
 import { format } from 'date-fns';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // ============================
 // Impact Page Component
 // ============================
 const Impact = () => {
+
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // --- Local state to hold user stats ---
   const [impact, setImpact] = useState({
     name: '',
@@ -27,6 +32,7 @@ const Impact = () => {
       treesPlanted: number;
     }[],
   });
+  
 
   // --- Fetch data on mount ---
   useEffect(() => {
@@ -77,13 +83,59 @@ const Impact = () => {
 
         if (badgesError) throw badgesError;
 
-        // 5️⃣ (Optional) Fetch total users for rank logic
-        const { count: totalUsersCount } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true });
+        // 5️⃣ Fetch all user events to calculate rank
+        const { data: allUserEvents, error: allEventsError } = await supabase
+        .from('user_events')
+        .select('user_id, trees_planted');
 
-        // Mock rank logic for now (can be replaced by a SQL rank function)
-        const userRank = Math.floor(Math.random() * (totalUsersCount || 1000));
+        if (allEventsError) throw allEventsError;
+
+        // Aggregate total trees per user
+        const userTotals = allUserEvents.reduce((acc, row) => {
+        acc[row.user_id] = (acc[row.user_id] || 0) + (row.trees_planted || 0);
+        return acc;
+        }, {});
+
+        // Sort users by total trees planted
+        const sorted = Object.entries(userTotals).sort((a, b) => b[1] - a[1]);
+
+        // Find logged-in user's rank
+        const rank = sorted.findIndex(([id]) => id === user.id) + 1;
+        const totalUsers = sorted.length;
+        const userTotal = userTotals[user.id] || 0;
+
+
+        // Fetch User impact
+        const { data: events, error } = await supabase
+          .from('user_events')
+          .select('trees_planted, participated_at')
+          .eq('user_id', user.id)
+          .order('participated_at', { ascending: true });
+
+        if (error) throw error;
+
+        // Transform the data: group by month-year
+        const grouped = {};
+
+        events.forEach((item) => {
+          const date = new Date(item.participated_at);
+          const monthYear = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+
+          if (!grouped[monthYear]) {
+            grouped[monthYear] = 0;
+          }
+          grouped[monthYear] += item.trees_planted;
+        });
+
+        // Convert grouped data into array for Recharts
+        const formattedData = Object.entries(grouped).map(([month, trees]) => ({
+          month,
+          trees,
+        }));
+
+        // Set data for the impacts graph
+        setData(formattedData);
+        setLoading(false);
 
         // 6️⃣ Structure data for the UI
         setImpact({
@@ -91,10 +143,10 @@ const Impact = () => {
           treesPlanted: totalTrees,
           co2Offset: co2Offset,
           eventsParticipated: totalEvents,
-          rank: userRank,
-          totalUsers: totalUsersCount || 0,
+          rank: rank,
+          totalUsers: totalUsers || 0,
           badges: badges.map(b => b.badge_name),
-          eventHistory: (0 || []).map((e: any) => ({
+          eventHistory: (userEvents).map((e: any) => ({
             eventId: e.events?.id ?? 'N/A',
             eventName: e.events?.name ?? 'Unknown Event',
             date: e.events?.event_date ?? '',
@@ -200,21 +252,28 @@ const Impact = () => {
                   <CardTitle className="font-['Lora']">Your Impact Over Time</CardTitle>
                   <CardDescription>Trees planted per month</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  {/* Placeholder static data — can later use Supabase GROUP BY month query */}
-                  <div className="h-64 flex items-end justify-around gap-2">
-                    {[12, 8, 15, 7, 5].map((value, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                        <div
-                          className="w-full bg-primary rounded-t-lg transition-all hover:bg-primary-dark"
-                          style={{ height: `${(value / 15) * 100}%` }}
+                <CardContent className="h-72">
+                  {loading ? (
+                    <p className="text-center text-muted-foreground">Loading impact data...</p>
+                  ) : data.length === 0 ? (
+                    <p className="text-center text-muted-foreground">No impact data yet.</p>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="trees"
+                          stroke="#16a34a" // Tailwind "green-600"
+                          strokeWidth={3}
+                          dot={{ r: 4 }}
                         />
-                        <span className="text-xs text-muted-foreground">
-                          {['Nov', 'Dec', 'Jan', 'Feb', 'Mar'][index]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </CardContent>
               </Card>
 
