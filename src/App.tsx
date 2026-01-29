@@ -33,16 +33,17 @@ const App = () => (
             <Route path="/events/:id" element={<Events />} />
             <Route path="/partners" element={<Partners />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard/corporate" element={<CorporateDashboard />} />
 
             {/* Protected Routes */}
-            <Route
+            {/* <Route
               path="/dashboard/corporate"
               element={
                 <ProtectedRoute>
                   <CorporateDashboard />
                 </ProtectedRoute>
               }
-            />
+            /> */}
             <Route 
               path="/projects" 
               element={
